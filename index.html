@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Gate Simulator - Экзамен</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Заголовок с информацией об экзамене -->
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-microchip"></i> Logic Gate Simulator</h1>
+                <div class="exam-info">
+                    <span class="badge"><i class="fas fa-graduation-cap"></i> Экзаменационная работа</span>
+                    <span class="badge"><i class="fas fa-check-circle"></i> 7 логических вентилей</span>
+                    <span class="badge"><i class="fas fa-laptop-code"></i> Веб-приложение</span>
+                </div>
+                <p class="student-info">Студент: [Ваше ФИО] | Группа: [Ваша группа]</p>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Левая панель: Вентили -->
+            <div class="panel left-panel">
+                <h2><i class="fas fa-sliders-h"></i> Библиотека вентилей</h2>
+                <div class="gate-library">
+                    <div class="gate-item" data-type="AND" draggable="true">
+                        <div class="gate-visual and">AND</div>
+                        <div class="gate-desc">
+                            <h4>И (AND)</h4>
+                            <p>Выход = 1, если все входы = 1</p>
+                            <code>A ∧ B</code>
+                        </div>
+                    </div>
+                    <div class="gate-item" data-type="OR" draggable="true">
+                        <div class="gate-visual or">OR</div>
+                        <div class="gate-desc">
+                            <h4>ИЛИ (OR)</h4>
+                            <p>Выход = 1, если хотя бы один вход = 1</p>
+                            <code>A ∨ B</code>
+                        </div>
+                    </div>
+                    <div class="gate-item" data-type="NOT" draggable="true">
+                        <div class="gate-visual not">NOT</div>
+                        <div class="gate-desc">
+                            <h4>НЕ (NOT)</h4>
+                            <p>Инвертирует вход</p>
+                            <code>¬A</code>
+                        </div>
+                    </div>
+                    <div class="gate-item" data-type="XOR" draggable="true">
+                        <div class="gate-visual xor">XOR</div>
+                        <div class="gate-desc">
+                            <h4>XOR</h4>
+                            <p>Исключающее ИЛИ</p>
+                            <code>A ⊕ B</code>
+                        </div>
+                    </div>
+                    <div class="gate-item" data-type="NAND" draggable="true">
+                        <div class="gate-visual nand">NAND</div>
+                        <div class="gate-desc">
+                            <h4>И-НЕ (NAND)</h4>
+                            <p>Отрицание И</p>
+                            <code>¬(A ∧ B)</code>
+                        </div>
+                    </div>
+                    <div class="gate-item" data-type="NOR" draggable="true">
+                        <div class="gate-visual nor">NOR</div>
+                        <div class="gate-desc">
+                            <h4>ИЛИ-НЕ (NOR)</h4>
+                            <p>Отрицание ИЛИ</p>
+                            <code>¬(A ∨ B)</code>
+                        </div>
+                    </div>
+                    <div class="gate-item" data-type="XNOR" draggable="true">
+                        <div class="gate-visual xnor">XNOR</div>
+                        <div class="gate-desc">
+                            <h4>XNOR</h4>
+                            <p>Исключающее ИЛИ-НЕ</p>
+                            <code>¬(A ⊕ B)</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-output">
+                    <h3><i class="fas fa-plug"></i> Входы/Выходы</h3>
+                    <div class="io-controls">
+                        <button class="io-btn input-0" data-type="input-0">
+                            <i class="fas fa-toggle-off"></i> Вход 0
+                        </button>
+                        <button class="io-btn input-1" data-type="input-1">
+                            <i class="fas fa-toggle-on"></i> Вход 1
+                        </button>
+                        <button class="io-btn output" data-type="output">
+                            <i class="fas fa-lightbulb"></i> Выход
+                        </button>
+                    </div>
+                </div>
+
+                <div class="truth-tables">
+                    <h3><i class="fas fa-table"></i> Таблицы истинности</h3>
+                    <select id="gateSelector">
+                        <option value="AND">AND</option>
+                        <option value="OR">OR</option>
+                        <option value="NOT">NOT</option>
+                        <option value="XOR">XOR</option>
+                        <option value="NAND">NAND</option>
+                        <option value="NOR">NOR</option>
+                        <option value="XNOR">XNOR</option>
+                    </select>
+                    <div class="truth-table" id="truthTable">
+                        <!-- Таблица будет заполнена JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Центральная область: Рабочее поле -->
+            <div class="panel center-panel">
+                <div class="workspace-header">
+                    <h2><i class="fas fa-project-diagram"></i> Рабочее поле</h2>
+                    <div class="workspace-controls">
+                        <button id="clearBtn" class="tool-btn">
+                            <i class="fas fa-trash"></i> Очистить
+                        </button>
+                        <button id="saveBtn" class="tool-btn">
+                            <i class="fas fa-save"></i> Сохранить
+                        </button>
+                        <button id="loadBtn" class="tool-btn">
+                            <i class="fas fa-folder-open"></i> Загрузить
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="mainCanvas" width="800" height="500"></canvas>
+                    <div class="grid-overlay"></div>
+                    <div class="instructions">
+                        <p><i class="fas fa-mouse-pointer"></i> Перетащите вентиль из левой панели</p>
+                        <p><i class="fas fa-link"></i> Кликните на выход, затем на вход для соединения</p>
+                        <p><i class="fas fa-play"></i> Нажмите "Симуляция" для запуска</p>
+                    </div>
+                </div>
+
+                <div class="simulation-controls">
+                    <button id="simulateBtn" class="sim-btn">
+                        <i class="fas fa-play"></i> Запустить симуляцию
+                    </button>
+                    <button id="stepBtn" class="sim-btn">
+                        <i class="fas fa-step-forward"></i> Шаг симуляции
+                    </button>
+                    <button id="resetBtn" class="sim-btn">
+                        <i class="fas fa-redo"></i> Сбросить
+                    </button>
+                    <div class="speed-control">
+                        <label for="speedRange">Скорость:</label>
+                        <input type="range" id="speedRange" min="1" max="10" value="5">
+                        <span id="speedValue">Средняя</span>
+                    </div>
+                </div>
+
+                <div class="circuit-info">
+                    <h3><i class="fas fa-info-circle"></i> Информация о схеме</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Вентилей:</span>
+                            <span id="gateCount" class="info-value">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Соединений:</span>
+                            <span id="connectionCount" class="info-value">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Статус:</span>
+                            <span id="simulationStatus" class="info-value">Не активно</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Сложность:</span>
+                            <span id="complexity" class="info-value">Низкая</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая панель: Инструменты и примеры -->
+            <div class="panel right-panel">
+                <h2><i class="fas fa-tools"></i> Инструменты</h2>
+                <div class="tools">
+                    <button class="tool-btn active" data-tool="select">
+                        <i class="fas fa-mouse-pointer"></i> Выбор
+                    </button>
+                    <button class="tool-btn" data-tool="wire">
+                        <i class="fas fa-bolt"></i> Соединение
+                    </button>
+                    <button class="tool-btn" data-tool="delete">
+                        <i class="fas fa-times"></i> Удаление
+                    </button>
+                    <button class="tool-btn" data-tool="move">
+                        <i class="fas fa-arrows-alt"></i> Перемещение
+                    </button>
+                </div>
+
+                <div class="examples">
+                    <h3><i class="fas fa-star"></i> Примеры схем</h3>
+                    <button class="example-btn" data-example="halfAdder">
+                        <i class="fas fa-plus"></i> Полусумматор
+                    </button>
+                    <button class="example-btn" data-example="fullAdder">
+                        <i class="fas fa-calculator"></i> Полный сумматор
+                    </button>
+                    <button class="example-btn" data-example="multiplexer">
+                        <i class="fas fa-random"></i> Мультиплексор 2:1
+                    </button>
+                    <button class="example-btn" data-example="srLatch">
+                        <i class="fas fa-memory"></i> SR-триггер
+                    </button>
+                </div>
+
+                <div class="current-selection">
+                    <h3><i class="fas fa-crosshairs"></i> Выбранный элемент</h3>
+                    <div id="selectedInfo">
+                        <p>Ничего не выбрано</p>
+                    </div>
+                </div>
+
+                <div class="documentation">
+                    <h3><i class="fas fa-book"></i> Документация</h3>
+                    <div class="doc-content">
+                        <p><strong>ИНСТРУКЦИЯ:</strong></p>
+                        <ol>
+                            <li>Перетащите вентиль на поле</li>
+                            <li>Выберите инструмент "Соединение"</li>
+                            <li>Соедините выходы с входами</li>
+                            <li>Добавьте входы 0/1 и выходы</li>
+                            <li>Нажмите "Запустить симуляцию"</li>
+                        </ol>
+                        <p><strong>Экзаменационные требования:</strong></p>
+                        <ul>
+                            <li>✓ 7 типов логических вентилей</li>
+                            <li>✓ UI для создания схем</li>
+                            <li>✓ Симуляция работы</li>
+                            <li>✓ Визуализация сигналов</li>
+                            <li>✓ Примеры готовых схем</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Кнопка записи скринкаста -->
+                <div class="screencast-section">
+                    <h3><i class="fas fa-video"></i> Запись скринкаста</h3>
+                    <div class="screencast-controls">
+                        <button id="recordBtn" class="record-btn">
+                            <i class="fas fa-circle"></i> Начать запись
+                        </button>
+                        <button id="stopRecordBtn" class="record-btn stop" disabled>
+                            <i class="fas fa-square"></i> Остановить
+                        </button>
+                        <button id="downloadBtn" class="record-btn" disabled>
+                            <i class="fas fa-download"></i> Скачать
+                        </button>
+                    </div>
+                    <div class="recording-info">
+                        <p id="timer">00:00</p>
+                        <p class="hint"><i class="fas fa-info-circle"></i> Для экзамена: запишите демонстрацию работы</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <p><i class="fas fa-code"></i> Logic Gate Simulator v1.0 | Экзаменационная работа</p>
+                <p><i class="fas fa-github"></i> GitHub: <a href="#" id="githubLink">https://github.com/ваш-логин/logic-gate-exam</a></p>
+                <p class="timestamp" id="timestamp"></p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно для сохранения/загрузки -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-save"></i> Сохранение схемы</h3>
+            <textarea id="circuitData" rows="10" placeholder="Данные схемы в JSON формате..."></textarea>
+            <div class="modal-buttons">
+                <button id="copyBtn" class="modal-btn">Копировать JSON</button>
+                <button id="importBtn" class="modal-btn">Импортировать</button>
+                <button id="closeModal" class="modal-btn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
