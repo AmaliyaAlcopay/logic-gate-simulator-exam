@@ -4,9 +4,754 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logic Gate Simulator - Экзамен</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <style>
+        /* Основные стили */
+        :root {
+            --primary: #e91e63; 
+            --secondary: #f48fb1; 
+            --success: #4caf50; 
+            --danger: #f44336;
+            --warning: #ff9800;
+            --info: #00bcd4;
+            --light: #fce4ec; 
+            --dark: #880e4f; 
+            --gray: #ad1457;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ec407a 0%, #f48fb1 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 2000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Заголовок */
+        header {
+            background: linear-gradient(to right, #d81b60, #f06292);
+            color: white;
+            padding: 20px 30px;
+            flex-shrink: 0;
+        }
+
+        .header-content h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .exam-info {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .student-info {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        /* Основной контент */
+        .main-content {
+            display: flex;
+            flex: 1;
+            min-height: 500px;
+            gap: 15px;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        /* Панели */
+        .panel {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            width: 320px;
+            flex-shrink: 0;
+            gap: 15px;
+        }
+
+        .center-panel {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .right-panel {
+            width: 350px;
+            flex-shrink: 0;
+            gap: 15px;
+        }
+
+        /* Библиотека вентилей */
+        .gate-library {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .gate-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .gate-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: var(--secondary);
+        }
+
+        .gate-visual {
+            width: 50px;
+            height: 35px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .gate-desc {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .gate-desc h4 {
+            color: var(--primary);
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .gate-desc p {
+            color: var(--gray);
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .gate-desc code {
+            background: var(--light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        /* Цвета для разных вентилей */
+        .and { background: #3498db; }
+        .or { background: #2ecc71; }
+        .not { background: #e74c3c; }
+        .xor { background: #9b59b6; }
+        .nand { background: #e67e22; }
+        .nor { background: #1abc9c; }
+        .xnor { background: #d35400; }
+
+        /* Рабочее поле */
+        .workspace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .workspace-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tool-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .tool-btn:hover {
+            background: var(--dark);
+            transform: translateY(-2px);
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: white;
+            border: 2px solid var(--gray);
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        #mainCanvas {
+            display: block;
+            background: white;
+            width: 100%;
+            height: 100%;
+            cursor: default;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--dark);
+        }
+
+        .instructions p {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Кнопки управления */
+        .simulation-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        .sim-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .sim-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        #simulateBtn {
+            background: #e91e63;
+        }
+
+        #resetBtn {
+            background: var(--warning);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            font-size: 0.9rem;
+        }
+
+        #speedRange {
+            width: 100px;
+        }
+
+        /* Информация о схеме */
+        .circuit-info {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: var(--light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        /* Входы/выходы */
+        .input-output {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .io-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .io-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .io-btn:hover {
+            background: var(--dark);
+        }
+
+        .io-hint {
+            font-size: 0.8rem;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Таблицы истинности вентилей */
+        .truth-tables {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        #gateSelector {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid var(--gray);
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .truth-table {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .truth-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .truth-table th, .truth-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .truth-table th {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .truth-table .true {
+            background: #2ecc71;
+            color: white;
+            font-weight: bold;
+        }
+
+        .truth-table .false {
+            background: #e74c3c;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Правая панель - инструменты */
+        .tools-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tool-group {
+            margin-bottom: 20px;
+        }
+
+        .tool-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tool-btn[data-tool] {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid var(--gray);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+        }
+
+        .tool-btn[data-tool].active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .selected-element, .element-properties, .quick-actions {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        #selectedInfo, #elementProperties {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            min-height: 60px;
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: var(--info);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Статистика схемы */
+        .circuit-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: auto;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: var(--light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .summary-label {
+            color: var(--primary);
+        }
+
+        .summary-value {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        /* Подвал */
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .footer-content a {
+            color: #90caf9;
+            text-decoration: none;
+        }
+
+        .footer-content a:hover {
+            text-decoration: underline;
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .wide-modal {
+            max-width: 90%;
+            width: 90%;
+        }
+
+        #circuitData {
+            width: 100%;
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px solid var(--gray);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: var(--secondary);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Таблица в модальном окне */
+        .modal-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .circuit-truth-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .circuit-truth-table th, .circuit-truth-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .circuit-truth-table th {
+            background: var(--light);
+            color: var(--dark);
+            position: sticky;
+            top: 0;
+        }
+
+        .circuit-truth-table .true {
+            background: #2ecc71;
+            color: white;
+            font-weight: bold;
+        }
+
+        .circuit-truth-table .false {
+            background: #e74c3c;
+            color: white;
+            font-weight: bold;
+        }
+
+        .table-placeholder {
+            padding: 40px;
+            text-align: center;
+            color: #666;
+        }
+
+        .modal-summary {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background: var(--light);
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel {
+                width: 100%;
+            }
+            
+            .left-panel {
+                max-height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .panel {
+                padding: 10px;
+            }
+            
+            .workspace-controls, .simulation-controls {
+                flex-wrap: wrap;
+            }
+            
+            .tool-btn, .sim-btn {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+            }
+            
+            .header-content h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -19,7 +764,7 @@
                     <span class="badge"><i class="fas fa-check-circle"></i> 7 логических вентилей</span>
                     <span class="badge"><i class="fas fa-laptop-code"></i> Веб-приложение</span>
                 </div>
-                <p class="student-info">Студент: [Ваше ФИО] | Группа: [Ваша группа]</p>
+                <p class="student-info">Студент: Фаухетдинова Амалия Руслановна | Группа: 09-441 </p>
             </div>
         </header>
 
@@ -89,20 +834,20 @@
                 <div class="input-output">
                     <h3><i class="fas fa-plug"></i> Входы/Выходы</h3>
                     <div class="io-controls">
-                        <button class="io-btn input-0" data-type="input-0">
-                            <i class="fas fa-toggle-off"></i> Вход 0
+                        <button class="io-btn add-input">
+                            <i class="fas fa-plus-circle"></i> Добавить вход
                         </button>
-                        <button class="io-btn input-1" data-type="input-1">
-                            <i class="fas fa-toggle-on"></i> Вход 1
+                        <button class="io-btn add-output">
+                            <i class="fas fa-plus-circle"></i> Добавить выход
                         </button>
-                        <button class="io-btn output" data-type="output">
-                            <i class="fas fa-lightbulb"></i> Выход
-                        </button>
+                        <p class="io-hint">
+                            <i class="fas fa-info-circle"></i> Щелкните на входе, чтобы изменить значение (0/1)
+                        </p>
                     </div>
                 </div>
 
                 <div class="truth-tables">
-                    <h3><i class="fas fa-table"></i> Таблицы истинности</h3>
+                    <h3><i class="fas fa-table"></i> Таблицы истинности вентилей</h3>
                     <select id="gateSelector">
                         <option value="AND">AND</option>
                         <option value="OR">OR</option>
@@ -132,17 +877,25 @@
                         <button id="loadBtn" class="tool-btn">
                             <i class="fas fa-folder-open"></i> Загрузить
                         </button>
+                        <button id="openTableBtn" class="tool-btn">
+                            <i class="fas fa-table"></i> Таблица
+                        </button>
                     </div>
                 </div>
                 
                 <div class="canvas-container">
                     <canvas id="mainCanvas" width="800" height="500"></canvas>
                     <div class="grid-overlay"></div>
-                    <div class="instructions">
-                        <p><i class="fas fa-mouse-pointer"></i> Перетащите вентиль из левой панели</p>
-                        <p><i class="fas fa-link"></i> Кликните на выход, затем на вход для соединения</p>
-                        <p><i class="fas fa-play"></i> Нажмите "Симуляция" для запуска</p>
-                    </div>
+
+
+                   <div class="instructions">
+    <p><i class="fas fa-mouse-pointer"></i> Перетащите вентиль из левой панели</p>
+    <p><i class="fas fa-link"></i> Выберите инструмент "Соединение" и кликните на выход, затем на вход</p>
+    <p><i class="fas fa-hand-pointer"></i> Кликните на элементе для его перетаскивания</p>
+    <p><i class="fas fa-mouse-pointer"></i> Для входа (Input): двойной клик - переключить 0/1</p>
+</div>
+
+
                 </div>
 
                 <div class="simulation-controls">
@@ -174,97 +927,81 @@
                             <span id="connectionCount" class="info-value">0</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Статус:</span>
-                            <span id="simulationStatus" class="info-value">Не активно</span>
+                            <span class="info-label">Входов:</span>
+                            <span id="inputCount" class="info-value">0</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Сложность:</span>
-                            <span id="complexity" class="info-value">Низкая</span>
+                            <span class="info-label">Выходов:</span>
+                            <span id="outputCount" class="info-value">0</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Правая панель: Инструменты и примеры -->
+            <!-- Правая панель: Инструменты и информация -->
             <div class="panel right-panel">
                 <h2><i class="fas fa-tools"></i> Инструменты</h2>
-                <div class="tools">
-                    <button class="tool-btn active" data-tool="select">
-                        <i class="fas fa-mouse-pointer"></i> Выбор
-                    </button>
-                    <button class="tool-btn" data-tool="wire">
-                        <i class="fas fa-bolt"></i> Соединение
-                    </button>
-                    <button class="tool-btn" data-tool="delete">
-                        <i class="fas fa-times"></i> Удаление
-                    </button>
-                    <button class="tool-btn" data-tool="move">
-                        <i class="fas fa-arrows-alt"></i> Перемещение
-                    </button>
-                </div>
-
-                <div class="examples">
-                    <h3><i class="fas fa-star"></i> Примеры схем</h3>
-                    <button class="example-btn" data-example="halfAdder">
-                        <i class="fas fa-plus"></i> Полусумматор
-                    </button>
-                    <button class="example-btn" data-example="fullAdder">
-                        <i class="fas fa-calculator"></i> Полный сумматор
-                    </button>
-                    <button class="example-btn" data-example="multiplexer">
-                        <i class="fas fa-random"></i> Мультиплексор 2:1
-                    </button>
-                    <button class="example-btn" data-example="srLatch">
-                        <i class="fas fa-memory"></i> SR-триггер
-                    </button>
-                </div>
-
-                <div class="current-selection">
-                    <h3><i class="fas fa-crosshairs"></i> Выбранный элемент</h3>
-                    <div id="selectedInfo">
-                        <p>Ничего не выбрано</p>
+                
+                <div class="tools-section">
+                    <div class="tool-group">
+                        <h4><i class="fas fa-mouse-pointer"></i> Режимы работы</h4>
+                        <div class="tool-buttons">
+                            <button class="tool-btn active" data-tool="select" id="selectTool">
+                                <i class="fas fa-mouse-pointer"></i> Выбор
+                            </button>
+                            <button class="tool-btn" data-tool="wire" id="wireTool">
+                                <i class="fas fa-bolt"></i> Соединение
+                            </button>
+                            <button class="tool-btn" data-tool="delete" id="deleteTool">
+                                <i class="fas fa-trash"></i> Удаление
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="documentation">
-                    <h3><i class="fas fa-book"></i> Документация</h3>
-                    <div class="doc-content">
-                        <p><strong>ИНСТРУКЦИЯ:</strong></p>
-                        <ol>
-                            <li>Перетащите вентиль на поле</li>
-                            <li>Выберите инструмент "Соединение"</li>
-                            <li>Соедините выходы с входами</li>
-                            <li>Добавьте входы 0/1 и выходы</li>
-                            <li>Нажмите "Запустить симуляцию"</li>
-                        </ol>
-                        <p><strong>Экзаменационные требования:</strong></p>
-                        <ul>
-                            <li>✓ 7 типов логических вентилей</li>
-                            <li>✓ UI для создания схем</li>
-                            <li>✓ Симуляция работы</li>
-                            <li>✓ Визуализация сигналов</li>
-                            <li>✓ Примеры готовых схем</li>
-                        </ul>
+                    <div class="selected-element">
+                        <h4><i class="fas fa-crosshairs"></i> Выбранный элемент</h4>
+                        <div id="selectedInfo">
+                            <p>Ничего не выбрано</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Кнопка записи скринкаста -->
-                <div class="screencast-section">
-                    <h3><i class="fas fa-video"></i> Запись скринкаста</h3>
-                    <div class="screencast-controls">
-                        <button id="recordBtn" class="record-btn">
-                            <i class="fas fa-circle"></i> Начать запись
+                    <div class="element-properties">
+                        <h4><i class="fas fa-cog"></i> Свойства элемента</h4>
+                        <div id="elementProperties">
+                            <p>Выберите элемент для настройки</p>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <h4><i class="fas fa-bolt"></i> Быстрые действия</h4>
+                        <button class="action-btn" id="toggleInputBtn">
+                            <i class="fas fa-toggle-on"></i> Переключить вход
                         </button>
-                        <button id="stopRecordBtn" class="record-btn stop" disabled>
-                            <i class="fas fa-square"></i> Остановить
-                        </button>
-                        <button id="downloadBtn" class="record-btn" disabled>
-                            <i class="fas fa-download"></i> Скачать
+                        <button class="action-btn" id="deleteSelectedBtn">
+                            <i class="fas fa-trash"></i> Удалить выбранное
                         </button>
                     </div>
-                    <div class="recording-info">
-                        <p id="timer">00:00</p>
-                        <p class="hint"><i class="fas fa-info-circle"></i> Для экзамена: запишите демонстрацию работы</p>
+                </div>
+
+                <div class="circuit-summary">
+                    <h4><i class="fas fa-chart-bar"></i> Статистика схемы</h4>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Всего элементов:</span>
+                            <span class="summary-value" id="totalElements">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Логических вентилей:</span>
+                            <span class="summary-value" id="logicGatesCount">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Активных соединений:</span>
+                            <span class="summary-value" id="activeConnections">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Сложность:</span>
+                            <span class="summary-value" id="complexity">Низкая</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -273,7 +1010,7 @@
         <footer>
             <div class="footer-content">
                 <p><i class="fas fa-code"></i> Logic Gate Simulator v1.0 | Экзаменационная работа</p>
-                <p><i class="fas fa-github"></i> GitHub: <a href="#" id="githubLink">https://github.com/ваш-логин/logic-gate-exam</a></p>
+                <p><i class="fas fa-github"></i> GitHub: <a href="https://github.com/amaliyaalcopay" target="_blank">amaliyaalcopay</a></p>
                 <p class="timestamp" id="timestamp"></p>
             </div>
         </footer>
@@ -292,6 +1029,1677 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Модальное окно для таблицы истинности схемы -->
+    <div id="truthTableModal" class="modal">
+        <div class="modal-content wide-modal">
+            <h3><i class="fas fa-table"></i> Таблица истинности схемы</h3>
+            <div class="table-controls-modal">
+                <div class="view-options">
+                    <label>
+                        <input type="checkbox" id="showGatesCheckbox" checked>
+                        Показывать значения вентилей
+                    </label>
+                    <button id="toggleColumnsBtn" class="small-btn">
+                        <i class="fas fa-columns"></i> Компактный вид
+                    </button>
+                </div>
+            </div>
+            <div class="modal-table-container" id="circuitTruthTableContainer">
+                <div class="table-placeholder">
+                    <i class="fas fa-table fa-3x"></i>
+                    <p>Постройте схему с входами и выходами</p>
+                    <p>Затем нажмите "Открыть таблицу"</p>
+                </div>
+            </div>
+            <div class="modal-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Входы:</span>
+                    <span class="summary-value" id="modalInputCount">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Выходы:</span>
+                    <span class="summary-value" id="modalOutputCount">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Вентили:</span>
+                    <span class="summary-value" id="modalGateCount">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Строк:</span>
+                    <span class="summary-value" id="modalRowCount">0</span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="exportTableBtn" class="modal-btn">
+                    <i class="fas fa-download"></i> Экспорт CSV
+                </button>
+                <button id="printTableBtn" class="modal-btn">
+                    <i class="fas fa-print"></i> Печать
+                </button>
+                <button id="closeTruthTableModal" class="modal-btn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Logic Gate Simulator - ИСПРАВЛЕННАЯ ВЕРСИЯ
+        // ============================================
+
+        class LogicGateSimulator {
+            constructor() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = 800;
+                this.canvas.height = 500;
+                
+                // Основные данные
+                this.gates = [];
+                this.wires = [];
+                this.selectedGate = null;
+                this.selectedTool = 'select';
+                this.dragging = false;
+                this.dragOffset = { x: 0, y: 0 };
+                
+                // Соединение проводов
+                this.connecting = false;
+                this.connectionSource = null;
+                this.tempWire = null;
+                
+                // Симуляция
+                this.isSimulating = false;
+                this.simulationSpeed = 5;
+                this.simulationInterval = null;
+                
+                // Счетчики
+                this.gateId = 1;
+                this.wireId = 1;
+                this.inputCounter = 1;
+                this.outputCounter = 1;
+                
+                // Таблица истинности
+                this.circuitTruthTable = null;
+                this.showGatesInTable = true;
+                this.compactView = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupTruthTables();
+                this.updateStats();
+                this.draw();
+                
+                document.getElementById('timestamp').textContent = 
+                    `Создано: ${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU')}`;
+            
+// Обработка двойного клика для быстрого переключения значений input
+this.canvas.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    const pos = this.getCanvasMousePosition(e);
+    const gate = this.findGateAt(pos.x, pos.y);
+    
+    if (gate && gate.type === 'input') {
+        gate.value = gate.value === 1 ? 0 : 1;
+        gate.isActive = gate.value === 1;
+
+gate.justToggled = true; // Добавляем флаг для анимации
+    
+    // Убираем флаг через 300 мс
+    setTimeout(() => {
+        gate.justToggled = false;
+        this.draw();
+    }, 300);
+
+
+        this.calculateGateValues();
+        this.draw();
+        this.updateSelectedInfo(gate);
+        this.updateElementProperties(gate);
+        
+        // Отладочное сообщение
+        console.log(`✅ Input переключен: ${gate.value}`);
+    }
+});
+
+}
+
+            setupEventListeners() {
+                // Перетаскивание вентилей на canvas
+                document.querySelectorAll('.gate-item').forEach(item => {
+                    item.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', e.target.closest('.gate-item').dataset.type);
+                    });
+                });
+
+                this.canvas.addEventListener('dragover', (e) => e.preventDefault());
+                this.canvas.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const gateType = e.dataTransfer.getData('text/plain');
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    this.addGate(gateType, x, y);
+                    this.draw();
+                    this.updateStats();
+                });
+
+                // События мыши на canvas
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
+                this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
+
+                // Инструменты
+                document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+                        e.target.closest('.tool-btn').classList.add('active');
+                        this.selectedTool = e.target.closest('.tool-btn').dataset.tool;
+                        this.connecting = false;
+                        this.connectionSource = null;
+                        this.tempWire = null;
+                    });
+                });
+
+                // Кнопки управления
+                document.getElementById('simulateBtn').addEventListener('click', () => this.toggleSimulation());
+                document.getElementById('stepBtn').addEventListener('click', () => this.stepSimulation());
+                document.getElementById('resetBtn').addEventListener('click', () => this.resetSimulation());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearWorkspace());
+                document.getElementById('saveBtn').addEventListener('click', () => this.saveCircuit());
+                document.getElementById('loadBtn').addEventListener('click', () => this.showModal());
+                document.getElementById('openTableBtn').addEventListener('click', () => this.openTruthTableModal());
+
+                // Входы/выходы
+                document.querySelector('.add-input').addEventListener('click', () => this.addInput());
+                document.querySelector('.add-output').addEventListener('click', () => this.addOutput());
+
+                // Быстрые действия
+                document.getElementById('toggleInputBtn').addEventListener('click', () => this.toggleSelectedInput());
+                document.getElementById('deleteSelectedBtn').addEventListener('click', () => this.deleteSelected());
+
+                // Модальные окна
+                document.getElementById('closeModal').addEventListener('click', () => this.hideModal());
+                document.getElementById('copyBtn').addEventListener('click', () => this.copyCircuitData());
+                document.getElementById('importBtn').addEventListener('click', () => this.importCircuitData());
+                document.getElementById('closeTruthTableModal').addEventListener('click', () => {
+                    document.getElementById('truthTableModal').style.display = 'none';
+                });
+                
+                // Управление таблицей
+                document.getElementById('exportTableBtn').addEventListener('click', () => this.exportTruthTable());
+                document.getElementById('printTableBtn').addEventListener('click', () => this.printTruthTable());
+                
+                // Чекбокс для показа вентилей
+                document.getElementById('showGatesCheckbox').addEventListener('change', (e) => {
+                    this.showGatesInTable = e.target.checked;
+                    if (this.circuitTruthTable) {
+                        this.displayCircuitTruthTable();
+                    }
+                });
+                
+                // Кнопка компактного вида
+                const toggleBtn = document.getElementById('toggleColumnsBtn');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', () => this.toggleCompactView());
+                }
+
+                // Селектор таблиц вентилей
+                document.getElementById('gateSelector').addEventListener('change', (e) => {
+                    this.updateTruthTable(e.target.value);
+                });
+
+                // Слайдер скорости
+                document.getElementById('speedRange').addEventListener('input', (e) => {
+                    this.simulationSpeed = parseInt(e.target.value);
+                    const speeds = ['Очень медленно', 'Медленно', 'Умеренно', 'Средняя', 'Быстро', 'Очень быстро', 'Максимальная'];
+                    document.getElementById('speedValue').textContent = 
+                        speeds[this.simulationSpeed - 1] || 'Средняя';
+                });
+
+                // Изменение размера canvas при изменении размера окна
+                window.addEventListener('resize', () => this.adjustCanvasSize());
+            }
+
+            adjustCanvasSize() {
+                const container = this.canvas.parentElement;
+                this.canvas.width = container.clientWidth;
+                this.canvas.height = container.clientHeight;
+                this.draw();
+            }
+
+            // ============================================
+            // МЕТОДЫ ДЛЯ РАБОТЫ С ВЕНТИЛЯМИ
+            // ============================================
+
+            addGate(type, x, y) {
+                const gate = {
+                    id: this.gateId++,
+                    type: type,
+                    x: Math.max(10, Math.min(x - 40, this.canvas.width - 90)),
+                    y: Math.max(10, Math.min(y - 30, this.canvas.height - 70)),
+                    width: 80,
+                    height: 60,
+                    inputs: type === 'NOT' ? [null] : [null, null],
+                    output: null,
+                    isActive: false,
+                    connectedInputs: type === 'NOT' ? [null] : [null, null],
+                    name: `${type}_${this.gateId - 1}`
+                };
+                
+                this.gates.push(gate);
+                return gate;
+            }
+
+            addInput() {
+                const x = 50 + Math.random() * 100;
+                const y = 50 + Math.random() * 100;
+                
+                const input = {
+                    id: this.gateId++,
+                    type: 'input',
+                    value: 0,
+                    x: Math.max(10, Math.min(x, this.canvas.width - 70)),
+                    y: Math.max(10, Math.min(y, this.canvas.height - 50)),
+                    width: 60,
+                    height: 40,
+                    isActive: false,
+                    name: `IN${this.inputCounter++}`
+                };
+                
+                this.gates.push(input);
+                this.draw();
+                this.updateStats();
+            }
+
+            addOutput() {
+                const x = this.canvas.width - 150 + Math.random() * 100;
+                const y = 50 + Math.random() * 100;
+                
+                const output = {
+                    id: this.gateId++,
+                    type: 'output',
+                    value: null,
+                    x: Math.max(10, Math.min(x, this.canvas.width - 70)),
+                    y: Math.max(10, Math.min(y, this.canvas.height - 50)),
+                    width: 60,
+                    height: 40,
+                    isActive: false,
+                    name: `OUT${this.outputCounter++}`
+                };
+                
+                this.gates.push(output);
+                this.draw();
+                this.updateStats();
+            }
+
+            // ============================================
+            // ОБРАБОТКА МЫШИ
+            // ============================================
+
+            getCanvasMousePosition(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            handleMouseDown(e) {
+                const pos = this.getCanvasMousePosition(e);
+                const gate = this.findGateAt(pos.x, pos.y);
+                
+                if (this.selectedTool === 'select') {
+    if (gate) {
+        // Проверяем, не кликнули ли мы на точку соединения
+        const clickInfo = this.getGateClickInfo(gate, pos.x, pos.y);
+        
+        if (clickInfo.type === 'output' || clickInfo.type === 'input') {
+            // Клик на точке соединения - только выделение
+            this.selectedGate = gate;
+            this.updateSelectedInfo(gate);
+            this.updateElementProperties(gate);
+        } else if (clickInfo.type === 'body' || clickInfo.type === 'clicked') {
+            // Клик на теле элемента (включая input) - начинаем перетаскивание
+            this.selectedGate = gate;
+            this.dragging = true;
+            this.dragOffset.x = pos.x - gate.x;
+            this.dragOffset.y = pos.y - gate.y;
+            this.updateSelectedInfo(gate);
+            this.updateElementProperties(gate);
+            
+            // Не переключаем значение input здесь! Это сделаем по двойному клику
+        }
+    } else {
+        // Клик на пустом месте
+        this.selectedGate = null;
+        this.updateSelectedInfo(null);
+        this.updateElementProperties(null);
+    }
+
+                } else if (this.selectedTool === 'delete') {
+                    if (gate) {
+                        this.deleteGate(gate);
+                    }
+                } else if (this.selectedTool === 'wire') {
+                    if (gate) {
+                        if (!this.connecting) {
+                            const clickInfo = this.getGateClickInfo(gate, pos.x, pos.y);
+                            if (clickInfo.type === 'output' || clickInfo.type === 'input') {
+                                this.connecting = true;
+                                this.connectionSource = gate;
+                                this.connectionSourceType = clickInfo.type;
+                                this.tempWire = {
+                                    fromGate: gate,
+                                    fromX: clickInfo.x,
+                                    fromY: clickInfo.y,
+                                    toX: pos.x,
+                                    toY: pos.y
+                                };
+                            }
+                        } else {
+                            const clickInfo = this.getGateClickInfo(gate, pos.x, pos.y);
+                            if (this.canConnect(this.connectionSource, gate, this.connectionSourceType, clickInfo)) {
+                                this.createConnection(this.connectionSource, gate, this.connectionSourceType, clickInfo);
+                            }
+                            this.connecting = false;
+                            this.connectionSource = null;
+                            this.tempWire = null;
+                        }
+                    } else if (this.connecting) {
+                        // Если начали соединение, но отпустили не над вентилем
+                        this.connecting = false;
+                        this.connectionSource = null;
+                        this.tempWire = null;
+                    }
+                }
+                
+                this.draw();
+            }
+
+            handleMouseMove(e) {
+                const pos = this.getCanvasMousePosition(e);
+                
+                if (this.dragging && this.selectedGate) {
+                    // Вычисляем новую позицию
+                    const newX = pos.x - this.dragOffset.x;
+                    const newY = pos.y - this.dragOffset.y;
+                    
+                    // Ограничиваем движение в пределах canvas
+                    this.selectedGate.x = Math.max(10, Math.min(newX, this.canvas.width - this.selectedGate.width - 10));
+                    this.selectedGate.y = Math.max(10, Math.min(newY, this.canvas.height - this.selectedGate.height - 10));
+                    
+                    // Обновляем провода, подключенные к этому вентилю
+                    this.updateWiresForGate(this.selectedGate);
+                    
+                    this.draw();
+                } else if (this.connecting && this.tempWire) {
+                    // Обновляем конечную точку временного провода
+                    this.tempWire.toX = pos.x;
+                    this.tempWire.toY = pos.y;
+                    this.draw();
+                }
+            }
+
+            handleMouseUp() {
+                this.dragging = false;
+                this.draw();
+            }
+
+            handleMouseLeave() {
+                this.dragging = false;
+                this.connecting = false;
+                this.connectionSource = null;
+                this.tempWire = null;
+                this.draw();
+            }
+
+            findGateAt(x, y) {
+                // Ищем с конца (чтобы верхние элементы были приоритетнее)
+                for (let i = this.gates.length - 1; i >= 0; i--) {
+                    const gate = this.gates[i];
+                    if (x >= gate.x && x <= gate.x + gate.width &&
+                        y >= gate.y && y <= gate.y + gate.height) {
+                        return gate;
+                    }
+                }
+                return null;
+            }
+
+            getGateClickInfo(gate, x, y) {
+                const gateCenterX = gate.x + gate.width / 2;
+                const gateCenterY = gate.y + gate.height / 2;
+                const clickRadius = 8;
+                
+                // Проверяем выход (правая сторона)
+                if (gate.type === 'input' || 
+                    ['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(gate.type)) {
+                    const outputX = gate.x + gate.width;
+                    const outputY = gateCenterY;
+                    const distToOutput = Math.sqrt((x - outputX) ** 2 + (y - outputY) ** 2);
+                    
+                    if (distToOutput <= clickRadius) {
+                        return {
+                            type: 'output',
+                            x: outputX,
+                            y: outputY,
+                            gate: gate
+                        };
+                    }
+                }
+                
+                // Проверяем входы (левая сторона)
+                if (gate.type === 'output') {
+                    const inputX = gate.x;
+                    const inputY = gateCenterY;
+                    const distToInput = Math.sqrt((x - inputX) ** 2 + (y - inputY) ** 2);
+                    
+                    if (distToInput <= clickRadius) {
+                        return {
+                            type: 'input',
+                            index: 0,
+                            x: inputX,
+                            y: inputY,
+                            gate: gate
+                        };
+                    }
+                } else if (gate.type === 'NOT') {
+                    const inputX = gate.x;
+                    const inputY = gateCenterY;
+                    const distToInput = Math.sqrt((x - inputX) ** 2 + (y - inputY) ** 2);
+                    
+                    if (distToInput <= clickRadius) {
+                        return {
+                            type: 'input',
+                            index: 0,
+                            x: inputX,
+                            y: inputY,
+                            gate: gate
+                        };
+                    }
+                } else if (['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(gate.type)) {
+                    const topInputY = gate.y + gate.height / 3;
+                    const bottomInputY = gate.y + 2 * gate.height / 3;
+                    const inputX = gate.x;
+                    
+                    const distToTopInput = Math.sqrt((x - inputX) ** 2 + (y - topInputY) ** 2);
+                    const distToBottomInput = Math.sqrt((x - inputX) ** 2 + (y - bottomInputY) ** 2);
+                    
+                    if (distToTopInput <= clickRadius) {
+                        return {
+                            type: 'input',
+                            index: 0,
+                            x: inputX,
+                            y: topInputY,
+                            gate: gate
+                        };
+                    } else if (distToBottomInput <= clickRadius) {
+                        return {
+                            type: 'input',
+                            index: 1,
+                            x: inputX,
+                            y: bottomInputY,
+                            gate: gate
+                        };
+                    }
+                }
+                
+               // Для input возвращаем 'body', чтобы можно было начать перетаскивание
+if (gate.type === 'input' && 
+    x >= gate.x && x <= gate.x + gate.width &&
+    y >= gate.y && y <= gate.y + gate.height) {
+    return { type: 'body', gate: gate };
+}
+                
+                return { type: 'body', gate: gate };
+            }
+
+            canConnect(fromGate, toGate, fromType, toInfo) {
+                if (!fromGate || !toGate) return false;
+                if (fromGate === toGate) return false;
+                
+                // Выход можно соединить только со входом
+                if (fromType === 'output' && toInfo.type !== 'input') return false;
+                
+                // Проверяем логические ограничения
+                if (fromGate.type === 'input' && 
+                    !['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR', 'output'].includes(toGate.type)) {
+                    return false;
+                }
+                
+                // Логические вентили могут соединяться с другими вентилями или выходами
+                if (['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(fromGate.type)) {
+                    if (!['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR', 'output'].includes(toGate.type)) {
+                        return false;
+                    }
+                }
+                
+                // Проверяем, не соединены ли уже
+                const existingWire = this.wires.find(w => 
+                    w.fromGateId === fromGate.id && 
+                    w.toGateId === toGate.id &&
+                    w.targetInputIndex === (toInfo.index || 0)
+                );
+                
+                if (existingWire) return false;
+                
+                // Проверяем, не подключен ли уже этот вход
+                if (toGate.connectedInputs && toGate.connectedInputs[toInfo.index] !== null) {
+                    return false;
+                }
+                
+                return true;
+            }
+
+            createConnection(fromGate, toGate, fromType, toInfo) {
+                if (fromType === 'output' && toInfo.type === 'input') {
+                    // Координаты выхода
+                    let fromX = fromGate.x + fromGate.width;
+                    let fromY = fromGate.y + fromGate.height / 2;
+                    
+                    // Координаты входа
+                    let toX, toY;
+                    
+                    if (toGate.type === 'output') {
+                        toX = toGate.x;
+                        toY = toGate.y + toGate.height / 2;
+                    } else if (toGate.type === 'NOT') {
+                        toX = toGate.x;
+                        toY = toGate.y + toGate.height / 2;
+                    } else if (['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(toGate.type)) {
+                        toX = toGate.x;
+                        if (toInfo.index === 0) {
+                            toY = toGate.y + toGate.height / 3;
+                        } else {
+                            toY = toGate.y + 2 * toGate.height / 3;
+                        }
+                    }
+                    
+                    const wire = {
+                        id: this.wireId++,
+                        fromGateId: fromGate.id,
+                        toGateId: toGate.id,
+                        targetInputIndex: toInfo.index || 0,
+                        fromX: fromX,
+                        fromY: fromY,
+                        toX: toX,
+                        toY: toY,
+                        value: null,
+                        isActive: false
+                    };
+                    
+                    this.wires.push(wire);
+                    
+                    // Обновляем информацию о подключенных входах
+                    if (toGate.connectedInputs) {
+                        toGate.connectedInputs[toInfo.index] = fromGate.id;
+                    } else if (toGate.type && ['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(toGate.type)) {
+                        toGate.connectedInputs = toGate.type === 'NOT' ? [null] : [null, null];
+                        toGate.connectedInputs[toInfo.index] = fromGate.id;
+                    } else if (toGate.type === 'output') {
+                        toGate.connectedInputs = [fromGate.id];
+                    }
+                    
+                    this.updateStats();
+                    this.draw();
+                }
+            }
+
+            updateWiresForGate(gate) {
+                this.wires.forEach(wire => {
+                    if (wire.fromGateId === gate.id) {
+                        const fromGate = this.gates.find(g => g.id === wire.fromGateId);
+                        if (fromGate) {
+                            wire.fromX = fromGate.x + fromGate.width;
+                            wire.fromY = fromGate.y + fromGate.height / 2;
+                        }
+                    }
+                    
+                    if (wire.toGateId === gate.id) {
+                        const toGate = this.gates.find(g => g.id === wire.toGateId);
+                        if (toGate) {
+                            if (toGate.type === 'output') {
+                                wire.toX = toGate.x;
+                                wire.toY = toGate.y + toGate.height / 2;
+                            } else if (toGate.type === 'NOT') {
+                                wire.toX = toGate.x;
+                                wire.toY = toGate.y + toGate.height / 2;
+                            } else if (toGate.type && ['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(toGate.type)) {
+                                wire.toX = toGate.x;
+                                if (wire.targetInputIndex === 0) {
+                                    wire.toY = toGate.y + toGate.height / 3;
+                                } else {
+                                    wire.toY = toGate.y + 2 * toGate.height / 3;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            deleteGate(gate) {
+                if (confirm(`Удалить ${gate.type || 'элемент'}?`)) {
+                    // Удаляем провода, связанные с этим вентилем
+                    this.wires = this.wires.filter(wire => 
+                        wire.fromGateId !== gate.id && wire.toGateId !== gate.id
+                    );
+                    
+                    // Удаляем вентиль
+                    this.gates = this.gates.filter(g => g !== gate);
+                    
+                    // Обновляем connectedInputs у других вентилей
+                    this.gates.forEach(g => {
+                        if (g.connectedInputs) {
+                            g.connectedInputs = g.connectedInputs.map(inputId => 
+                                inputId === gate.id ? null : inputId
+                            );
+                        }
+                    });
+                    
+                    if (this.selectedGate === gate) {
+                        this.selectedGate = null;
+                        this.updateSelectedInfo(null);
+                        this.updateElementProperties(null);
+                    }
+                    
+                    this.updateStats();
+                    this.draw();
+                }
+            }
+
+            deleteSelected() {
+                if (this.selectedGate) {
+                    this.deleteGate(this.selectedGate);
+                } else {
+                    alert('Сначала выберите элемент для удаления');
+                }
+            }
+
+            // ============================================
+            // МЕТОДЫ РИСОВАНИЯ
+            // ============================================
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.drawGrid();
+                this.wires.forEach(wire => this.drawWire(wire));
+                
+                if (this.tempWire) {
+                    this.drawTempWire(this.tempWire);
+                }
+                
+                this.gates.forEach(gate => this.drawGate(gate));
+                
+                if (this.selectedGate) {
+                    this.drawSelection(this.selectedGate);
+                }
+            }
+
+            drawGrid() {
+                const gridSize = 20;
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+                this.ctx.lineWidth = 1;
+                
+                for (let x = 0; x < this.canvas.width; x += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                for (let y = 0; y < this.canvas.height; y += gridSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+            }
+
+            drawGate(gate) {
+                this.ctx.save();
+                
+                let color, textColor;
+                
+                if (gate.type === 'input') {
+                    color = gate.value === 1 ? '#2ecc71' : '#e74c3c';
+                    textColor = 'white';
+// Добавляем эффект при переключении
+    if (gate.justToggled) {
+        this.ctx.shadowColor = '#f39c12';
+        this.ctx.shadowBlur = 20;
+        gate.justToggled = false;
+    }
+
+
+                } else if (gate.type === 'output') {
+                    color = gate.value === 1 ? '#f1c40f' : 
+                           gate.value === 0 ? '#7f8c8d' : '#bdc3c7';
+                    textColor = gate.value !== null ? 'white' : '#2c3e50';
+                } else {
+                    color = gate.isActive ? this.getActiveGateColor(gate.type) : this.getGateColor(gate.type);
+                    textColor = 'white';
+                }
+                
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(gate.x, gate.y, gate.width, gate.height);
+                
+                this.ctx.strokeStyle = gate.isActive ? 'white' : '#2c3e50';
+                this.ctx.lineWidth = gate.isActive ? 3 : 2;
+                this.ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
+                
+                this.ctx.fillStyle = textColor;
+                this.ctx.font = gate.type.length > 3 ? 'bold 14px Arial' : 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                
+                const label = gate.type === 'input' ? `IN:${gate.value}` :
+                             gate.type === 'output' ? 'OUT' : gate.type;
+                
+                this.ctx.fillText(label, gate.x + gate.width/2, gate.y + gate.height/2);
+                
+                if (gate.type === 'output' && gate.value !== null) {
+                    this.ctx.font = 'bold 20px Arial';
+                    this.ctx.fillText(gate.value.toString(), gate.x + gate.width/2, gate.y + gate.height/2 + 25);
+                }
+                
+                this.drawGateContacts(gate);
+                
+                this.ctx.restore();
+            }
+
+            drawGateContacts(gate) {
+                this.ctx.fillStyle = '#2c3e50';
+                
+                // Рисуем выход (справа)
+                if (gate.type === 'input' || ['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(gate.type)) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(gate.x + gate.width, gate.y + gate.height/2, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Рисуем входы (слева)
+                if (gate.type === 'output') {
+                    this.ctx.beginPath();
+                    this.ctx.arc(gate.x, gate.y + gate.height/2, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                } else if (gate.type === 'NOT') {
+                    this.ctx.beginPath();
+                    this.ctx.arc(gate.x, gate.y + gate.height/2, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                } else if (['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(gate.type)) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(gate.x, gate.y + gate.height/3, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(gate.x, gate.y + 2*gate.height/3, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+
+            drawWire(wire) {
+                this.ctx.save();
+                
+                this.ctx.strokeStyle = wire.isActive ? '#f39c12' : '#34495e';
+                this.ctx.lineWidth = wire.isActive ? 4 : 2;
+                this.ctx.lineCap = 'round';
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(wire.fromX, wire.fromY);
+                this.ctx.lineTo(wire.toX, wire.toY);
+                this.ctx.stroke();
+                
+                this.ctx.restore();
+            }
+
+            drawTempWire(tempWire) {
+                this.ctx.save();
+                
+                this.ctx.strokeStyle = '#3498db';
+                this.ctx.lineWidth = 2;
+                this.ctx.lineCap = 'round';
+                this.ctx.setLineDash([5, 3]);
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(tempWire.fromX, tempWire.fromY);
+                this.ctx.lineTo(tempWire.toX, tempWire.toY);
+                this.ctx.stroke();
+                
+                this.ctx.restore();
+            }
+
+            drawSelection(gate) {
+                this.ctx.save();
+                
+                this.ctx.strokeStyle = '#3498db';
+                this.ctx.lineWidth = 3;
+                this.ctx.setLineDash([5, 3]);
+                
+                this.ctx.strokeRect(
+                    gate.x - 5, 
+                    gate.y - 5, 
+                    gate.width + 10, 
+                    gate.height + 10
+                );
+                
+                this.ctx.restore();
+            }
+
+            getGateColor(type) {
+                const colors = {
+                    'AND': '#3498db', 'OR': '#2ecc71', 'NOT': '#e74c3c',
+                    'XOR': '#9b59b6', 'NAND': '#e67e22', 'NOR': '#1abc9c',
+                    'XNOR': '#d35400'
+                };
+                return colors[type] || '#95a5a6';
+            }
+
+            getActiveGateColor(type) {
+                const colors = {
+                    'AND': '#2980b9', 'OR': '#27ae60', 'NOT': '#c0392b',
+                    'XOR': '#8e44ad', 'NAND': '#d35400', 'NOR': '#16a085',
+                    'XNOR': '#a04000'
+                };
+                return colors[type] || '#7f8c8d';
+            }
+
+            // ============================================
+            // ИНФОРМАЦИЯ И СТАТИСТИКА
+            // ============================================
+
+            updateStats() {
+                const logicGates = this.gates.filter(g => 
+                    ['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(g.type)).length;
+                const totalConnections = this.wires.length;
+                const inputs = this.gates.filter(g => g.type === 'input').length;
+                const outputs = this.gates.filter(g => g.type === 'output').length;
+                const activeConnections = this.wires.filter(w => w.isActive).length;
+                const totalElements = this.gates.length;
+                
+                document.getElementById('gateCount').textContent = logicGates;
+                document.getElementById('connectionCount').textContent = totalConnections;
+                document.getElementById('inputCount').textContent = inputs;
+                document.getElementById('outputCount').textContent = outputs;
+                document.getElementById('totalElements').textContent = totalElements;
+                document.getElementById('logicGatesCount').textContent = logicGates;
+                document.getElementById('activeConnections').textContent = activeConnections;
+                
+                const complexity = logicGates + totalConnections;
+                let complexityText = 'Низкая';
+                if (complexity > 10) complexityText = 'Средняя';
+                if (complexity > 20) complexityText = 'Высокая';
+                if (complexity > 30) complexityText = 'Очень высокая';
+                
+                document.getElementById('complexity').textContent = complexityText;
+            }
+
+            updateSelectedInfo(gate) {
+                const infoDiv = document.getElementById('selectedInfo');
+                
+                if (!gate) {
+                    infoDiv.innerHTML = '<p>Ничего не выбрано</p>';
+                    return;
+                }
+                
+                let html = `<h4>${gate.type || 'Элемент'}</h4>`;
+                html += `<p><strong>ID:</strong> ${gate.id}</p>`;
+                html += `<p><strong>Позиция:</strong> (${Math.round(gate.x)}, ${Math.round(gate.y)})</p>`;
+                
+                if (gate.type === 'input') {
+                    html += `<p><strong>Значение:</strong> ${gate.value}</p>`;
+                    html += `<p><strong>Тип:</strong> Входной сигнал</p>`;
+                    const connections = this.wires.filter(w => w.fromGateId === gate.id).length;
+                    html += `<p><strong>Подключено к:</strong> ${connections} элементам</p>`;
+                } else if (gate.type === 'output') {
+                    html += `<p><strong>Значение:</strong> ${gate.value !== null ? gate.value : 'не определено'}</p>`;
+                    html += `<p><strong>Тип:</strong> Выходной индикатор</p>`;
+                    const connections = this.wires.filter(w => w.toGateId === gate.id).length;
+                    html += `<p><strong>Подключено от:</strong> ${connections} элементов</p>`;
+                } else {
+                    html += `<p><strong>Состояние:</strong> ${gate.isActive ? 'Активен' : 'Не активен'}</p>`;
+                    html += `<p><strong>Выход:</strong> ${gate.output !== null ? gate.output : 'не определен'}</p>`;
+                    
+                    if (gate.connectedInputs) {
+                        const connectedInputs = gate.connectedInputs.filter(id => id !== null).length;
+                        html += `<p><strong>Подключенные входы:</strong> ${connectedInputs}</p>`;
+                    }
+                }
+                
+                infoDiv.innerHTML = html;
+            }
+
+            updateElementProperties(gate) {
+                const propertiesDiv = document.getElementById('elementProperties');
+                
+                if (!gate) {
+                    propertiesDiv.innerHTML = '<p>Выберите элемент для настройки</p>';
+                    return;
+                }
+                
+                let html = `<div class="property-group">`;
+                
+                if (gate.type === 'input') {
+                    html += `
+                        <div class="property">
+                            <label>Текущее значение:</label>
+                            <span class="property-value ${gate.value === 1 ? 'active' : 'inactive'}">
+                                ${gate.value} (${gate.value === 1 ? 'Истина' : 'Ложь'})
+                            </span>
+                        </div>
+                        <div class="property">
+                            <label>Имя:</label>
+                            <span class="property-value">${gate.name}</span>
+                        </div>
+                    `;
+                } else if (gate.type === 'output') {
+                    html += `
+                        <div class="property">
+                            <label>Текущее значение:</label>
+                            <span class="property-value ${gate.value === 1 ? 'active' : 'inactive'}">
+                                ${gate.value !== null ? gate.value : 'не определено'}
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="property">
+                            <label>Тип:</label>
+                            <span class="property-value">${gate.type}</span>
+                        </div>
+                        <div class="property">
+                            <label>Состояние:</label>
+                            <span class="property-value ${gate.isActive ? 'active' : 'inactive'}">
+                                ${gate.isActive ? 'Активен' : 'Не активен'}
+                            </span>
+                        </div>
+                        <div class="property">
+                            <label>Выход вентиля:</label>
+                            <span class="property-value">${gate.output !== null ? gate.output : 'не определен'}</span>
+                        </div>
+                    `;
+                }
+                
+                html += `</div>`;
+                propertiesDiv.innerHTML = html;
+            }
+
+            // ============================================
+            // СИМУЛЯЦИЯ
+            // ============================================
+
+            toggleSimulation() {
+                this.isSimulating = !this.isSimulating;
+                const btn = document.getElementById('simulateBtn');
+                
+                if (this.isSimulating) {
+                    btn.innerHTML = '<i class="fas fa-pause"></i> Остановить';
+                    btn.style.background = 'var(--warning)';
+                    this.runSimulation();
+                } else {
+                    btn.innerHTML = '<i class="fas fa-play"></i> Запустить симуляцию';
+                    btn.style.background = 'var(--success)';
+                    if (this.simulationInterval) {
+                        clearInterval(this.simulationInterval);
+                        this.simulationInterval = null;
+                    }
+                }
+            }
+
+            runSimulation() {
+                if (!this.isSimulating) return;
+                
+                const inputs = this.gates.filter(g => g.type === 'input');
+                if (inputs.length === 0) return;
+                
+                // Перебираем все комбинации входов
+                const numCombinations = Math.pow(2, inputs.length);
+                let currentCombination = 0;
+                
+                const simulateNext = () => {
+                    // Устанавливаем значения входов
+                    for (let i = 0; i < inputs.length; i++) {
+                        const value = (currentCombination >> (inputs.length - 1 - i)) & 1;
+                        inputs[i].value = value;
+                        inputs[i].isActive = value === 1;
+                    }
+                    
+                    this.calculateGateValues();
+                    this.draw();
+                    
+                    currentCombination = (currentCombination + 1) % numCombinations;
+                    
+                    if (this.isSimulating) {
+                        this.simulationInterval = setTimeout(simulateNext, 1000 / this.simulationSpeed);
+                    }
+                };
+                
+                simulateNext();
+            }
+
+            stepSimulation() {
+                const inputs = this.gates.filter(g => g.type === 'input');
+                if (inputs.length > 0) {
+                    // Находим первый вход и переключаем его значение
+                    const firstInput = inputs[0];
+                    if (firstInput) {
+                        firstInput.value = firstInput.value === 1 ? 0 : 1;
+                        firstInput.isActive = firstInput.value === 1;
+                        this.calculateGateValues();
+                        this.draw();
+                    }
+                }
+            }
+
+            calculateGateValues() {
+                // Сбрасываем значения
+                this.gates.forEach(gate => {
+                    if (gate.type !== 'input') {
+                        gate.isActive = false;
+                        gate.output = null;
+                        if (gate.type === 'output') {
+                            gate.value = null;
+                        }
+                    }
+                });
+                
+                this.wires.forEach(wire => {
+                    wire.isActive = false;
+                    wire.value = null;
+                });
+
+                // Вычисляем схему
+                let changed = true;
+                let iterations = 0;
+                const maxIterations = 100;
+                
+                while (changed && iterations < maxIterations) {
+                    changed = false;
+                    iterations++;
+                    
+                    this.gates.forEach(gate => {
+                        if (gate.type === 'input') {
+                            // Распространяем значения от входов
+                            this.wires.forEach(wire => {
+                                if (wire.fromGateId === gate.id) {
+                                    wire.value = gate.value;
+                                    wire.isActive = gate.value === 1;
+                                }
+                            });
+                            return;
+                        }
+                        
+                        if (gate.type === 'output') {
+                            const inputWire = this.wires.find(w => w.toGateId === gate.id);
+                            if (inputWire && inputWire.value !== null && gate.value !== inputWire.value) {
+                                gate.value = inputWire.value;
+                                gate.isActive = inputWire.value === 1;
+                                changed = true;
+                            }
+                            return;
+                        }
+                        
+                        // Логические вентили
+                        if (['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(gate.type)) {
+                            const inputs = this.getGateInputValues(gate);
+                            
+                            if (inputs.every(v => v !== null)) {
+                                const output = this.calculateGateOutput(gate.type, inputs);
+                                
+                                if (gate.output !== output) {
+                                    gate.output = output;
+                                    gate.isActive = output === 1;
+                                    changed = true;
+                                    
+                                    // Обновляем провода
+                                    this.wires.forEach(wire => {
+                                        if (wire.fromGateId === gate.id) {
+                                            wire.value = output;
+                                            wire.isActive = output === 1;
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            getGateInputValues(gate) {
+                if (!gate.connectedInputs) {
+                    return gate.type === 'NOT' ? [null] : [null, null];
+                }
+                
+                return gate.connectedInputs.map((sourceGateId, index) => {
+                    if (sourceGateId === null) return null;
+                    
+                    const sourceGate = this.gates.find(g => g.id === sourceGateId);
+                    if (!sourceGate) return null;
+                    
+                    if (sourceGate.type === 'input') {
+                        return sourceGate.value;
+                    }
+                    
+                    // Ищем провод от этого вентиля к данному
+                    const wire = this.wires.find(w => 
+                        w.fromGateId === sourceGateId && 
+                        w.toGateId === gate.id &&
+                        w.targetInputIndex === index
+                    );
+                    
+                    if (wire && wire.value !== null) {
+                        return wire.value;
+                    }
+                    
+                    return sourceGate.output;
+                });
+            }
+
+            calculateGateOutput(type, inputs) {
+                switch(type) {
+                    case 'AND': return inputs.every(v => v === 1) ? 1 : 0;
+                    case 'OR': return inputs.some(v => v === 1) ? 1 : 0;
+                    case 'NOT': return inputs[0] === 1 ? 0 : 1;
+                    case 'XOR': return inputs.filter(v => v === 1).length === 1 ? 1 : 0;
+                    case 'NAND': return inputs.every(v => v === 1) ? 0 : 1;
+                    case 'NOR': return inputs.some(v => v === 1) ? 0 : 1;
+                    case 'XNOR': return inputs.filter(v => v === 1).length === 1 ? 0 : 1;
+                    default: return 0;
+                }
+            }
+
+            resetSimulation() {
+                this.isSimulating = false;
+                const btn = document.getElementById('simulateBtn');
+                btn.innerHTML = '<i class="fas fa-play"></i> Запустить симуляцию';
+                btn.style.background = 'var(--success)';
+                
+                if (this.simulationInterval) {
+                    clearInterval(this.simulationInterval);
+                    this.simulationInterval = null;
+                }
+                
+                // Сбрасываем все значения
+                this.gates.forEach(gate => {
+                    if (gate.type === 'input') {
+                        gate.value = 0;
+                        gate.isActive = false;
+                    } else if (gate.type === 'output') {
+                        gate.value = null;
+                        gate.isActive = false;
+                    } else if (gate.type) {
+                        gate.output = null;
+                        gate.isActive = false;
+                    }
+                });
+                
+                this.wires.forEach(wire => {
+                    wire.value = null;
+                    wire.isActive = false;
+                });
+                
+                this.draw();
+            }
+
+            toggleSelectedInput() {
+                if (this.selectedGate && this.selectedGate.type === 'input') {
+                    this.selectedGate.value = this.selectedGate.value === 1 ? 0 : 1;
+                    this.selectedGate.isActive = this.selectedGate.value === 1;
+                    this.calculateGateValues();
+                    this.draw();
+                    this.updateSelectedInfo(this.selectedGate);
+                } else {
+                    alert('Выберите вход (Input) для переключения значения');
+                }
+            }
+
+            // ============================================
+            // СОХРАНЕНИЕ/ЗАГРУЗКА
+            // ============================================
+
+            clearWorkspace() {
+                if (confirm('Очистить рабочее поле? Все данные будут удалены.')) {
+                    this.gates = [];
+                    this.wires = [];
+                    this.selectedGate = null;
+                    this.connecting = false;
+                    this.connectionSource = null;
+                    this.tempWire = null;
+                    
+                    this.circuitTruthTable = null;
+                    
+                    this.updateStats();
+                    this.draw();
+                }
+            }
+
+            saveCircuit() {
+                const circuit = {
+                    gates: this.gates.map(gate => ({
+                        ...gate,
+                        // Удаляем временные свойства
+                        isActive: undefined,
+                        output: undefined,
+                        value: gate.type === 'input' ? gate.value : undefined
+                    })),
+                    wires: this.wires,
+                    timestamp: new Date().toISOString(),
+                    version: '1.0'
+                };
+                document.getElementById('circuitData').value = JSON.stringify(circuit, null, 2);
+                this.showModal();
+            }
+
+            showModal() {
+                document.getElementById('modal').style.display = 'flex';
+            }
+
+            hideModal() {
+                document.getElementById('modal').style.display = 'none';
+            }
+
+            copyCircuitData() {
+                const textarea = document.getElementById('circuitData');
+                textarea.select();
+                document.execCommand('copy');
+                alert('Схема скопирована в буфер обмена!');
+            }
+
+            importCircuitData() {
+                try {
+                    const data = JSON.parse(document.getElementById('circuitData').value);
+                    
+                    // Восстанавливаем счетчики
+                    this.gateId = Math.max(...data.gates.map(g => g.id), 0) + 1;
+                    this.wireId = Math.max(...(data.wires || []).map(w => w.id), 0) + 1;
+                    
+                    // Восстанавливаем вентили
+                    this.gates = data.gates.map(gate => ({
+                        ...gate,
+                        isActive: false,
+                        output: null,
+                        value: gate.type === 'input' ? (gate.value || 0) : null
+                    }));
+                    
+                    // Восстанавливаем провода
+                    this.wires = data.wires || [];
+                    
+                    this.updateStats();
+                    this.draw();
+                    alert('Схема загружена успешно!');
+                    this.hideModal();
+                } catch (e) {
+                    alert('Ошибка загрузки: ' + e.message);
+                }
+            }
+
+            // ============================================
+            // ТАБЛИЦЫ ИСТИННОСТИ
+            // ============================================
+
+            setupTruthTables() {
+                this.updateTruthTable('AND');
+            }
+
+            updateTruthTable(gateType) {
+                const table = document.getElementById('truthTable');
+                let html = '';
+                
+                switch(gateType) {
+                    case 'AND':
+                        html = `<table>
+                            <tr><th>A</th><th>B</th><th>Выход</th></tr>
+                            <tr><td>0</td><td>0</td><td class="false">0</td></tr>
+                            <tr><td>0</td><td>1</td><td class="false">0</td></tr>
+                            <tr><td>1</td><td>0</td><td class="false">0</td></tr>
+                            <tr><td>1</td><td>1</td><td class="true">1</td></tr>
+                        </table>`;
+                        break;
+                    case 'OR':
+                        html = `<table>
+                            <tr><th>A</th><th>B</th><th>Выход</th></tr>
+                            <tr><td>0</td><td>0</td><td class="false">0</td></tr>
+                            <tr><td>0</td><td>1</td><td class="true">1</td></tr>
+                            <tr><td>1</td><td>0</td><td class="true">1</td></tr>
+                            <tr><td>1</td><td>1</td><td class="true">1</td></tr>
+                        </table>`;
+                        break;
+                    case 'NOT':
+                        html = `<table>
+                            <tr><th>Вход</th><th>Выход</th></tr>
+                            <tr><td>0</td><td class="true">1</td></tr>
+                            <tr><td>1</td><td class="false">0</td></tr>
+                        </table>`;
+                        break;
+                    case 'XOR':
+                        html = `<table>
+                            <tr><th>A</th><th>B</th><th>Выход</th></tr>
+                            <tr><td>0</td><td>0</td><td class="false">0</td></tr>
+                            <tr><td>0</td><td>1</td><td class="true">1</td></tr>
+                            <tr><td>1</td><td>0</td><td class="true">1</td></tr>
+                            <tr><td>1</td><td>1</td><td class="false">0</td></tr>
+                        </table>`;
+                        break;
+                    case 'NAND':
+                        html = `<table>
+                            <tr><th>A</th><th>B</th><th>Выход</th></tr>
+                            <tr><td>0</td><td>0</td><td class="true">1</td></tr>
+                            <tr><td>0</td><td>1</td><td class="true">1</td></tr>
+                            <tr><td>1</td><td>0</td><td class="true">1</td></tr>
+                            <tr><td>1</td><td>1</td><td class="false">0</td></tr>
+                        </table>`;
+                        break;
+                    case 'NOR':
+                        html = `<table>
+                            <tr><th>A</th><th>B</th><th>Выход</th></tr>
+                            <tr><td>0</td><td>0</td><td class="true">1</td></tr>
+                            <tr><td>0</td><td>1</td><td class="false">0</td></tr>
+                            <tr><td>1</td><td>0</td><td class="false">0</td></tr>
+                            <tr><td>1</td><td>1</td><td class="false">0</td></tr>
+                        </table>`;
+                        break;
+                    case 'XNOR':
+                        html = `<table>
+                            <tr><th>A</th><th>B</th><th>Выход</th></tr>
+                            <tr><td>0</td><td>0</td><td class="true">1</td></tr>
+                            <tr><td>0</td><td>1</td><td class="false">0</td></tr>
+                            <tr><td>1</td><td>0</td><td class="false">0</td></tr>
+                            <tr><td>1</td><td>1</td><td class="true">1</td></tr>
+                        </table>`;
+                        break;
+                }
+                
+                table.innerHTML = html;
+            }
+
+            // ============================================
+            // ТАБЛИЦА ИСТИННОСТИ СХЕМЫ
+            // ============================================
+
+            generateCircuitTruthTable() {
+                // Находим все входы и выходы
+                const circuitInputs = this.gates.filter(gate => gate.type === 'input');
+                const circuitOutputs = this.gates.filter(gate => gate.type === 'output');
+                const circuitLogicGates = this.gates.filter(gate => 
+                    ['AND', 'OR', 'NOT', 'XOR', 'NAND', 'NOR', 'XNOR'].includes(gate.type)
+                );
+                
+                if (circuitInputs.length === 0) {
+                    this.showTableMessage('Добавьте входные элементы (Input) в схему');
+                    return;
+                }
+                
+                if (circuitOutputs.length === 0) {
+                    this.showTableMessage('Добавьте выходные элементы (Output) в схему');
+                    return;
+                }
+                
+                // Генерируем все комбинации входов
+                const inputCombinations = this.generateInputCombinations(circuitInputs.length);
+                
+                // Для каждой комбинации вычисляем всю схему
+                const truthTable = [];
+                
+                inputCombinations.forEach(combination => {
+                    // Устанавливаем значения входов
+                    circuitInputs.forEach((input, index) => {
+                        input.value = combination[index];
+                        input.isActive = combination[index] === 1;
+                    });
+                    
+                    // Вычисляем значения во всей схеме
+                    this.calculateGateValues();
+                    
+                    // Собираем данные для таблицы
+                    const row = {
+                        inputs: [...combination],
+                        gateOutputs: [],
+                        outputs: []
+                    };
+                    
+                    // Значения на выходах вентилей
+                    const sortedGates = [...circuitLogicGates].sort((a, b) => a.id - b.id);
+                    row.gateOutputs = sortedGates.map(gate => gate.output !== null ? gate.output : 0);
+                    
+                    // Значения на выходах схемы
+                    row.outputs = circuitOutputs.map(output => output.value !== null ? output.value : 0);
+                    
+                    truthTable.push(row);
+                });
+                
+                this.circuitTruthTable = truthTable;
+                this.circuitInputs = circuitInputs;
+                this.circuitOutputs = circuitOutputs;
+                this.circuitLogicGates = circuitLogicGates;
+                
+                this.displayCircuitTruthTable();
+                this.updateModalTableSummary();
+                
+                // Возвращаем значения к исходным
+                this.resetSimulation();
+            }
+
+            generateInputCombinations(numInputs) {
+                const combinations = [];
+                const totalCombinations = Math.pow(2, numInputs);
+                
+                for (let i = 0; i < totalCombinations; i++) {
+                    const combination = [];
+                    for (let j = numInputs - 1; j >= 0; j--) {
+                        combination.push((i >> j) & 1);
+                    }
+                    combinations.push(combination);
+                }
+                
+                return combinations;
+            }
+
+            showTableMessage(message) {
+                const tableContainer = document.getElementById('circuitTruthTableContainer');
+                if (tableContainer) {
+                    tableContainer.innerHTML = `
+                        <div class="table-placeholder">
+                            <i class="fas fa-exclamation-triangle fa-3x"></i>
+                            <p>${message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            displayCircuitTruthTable() {
+                const tableContainer = document.getElementById('circuitTruthTableContainer');
+                
+                if (!tableContainer || !this.circuitTruthTable || this.circuitTruthTable.length === 0) {
+                    this.showTableMessage('Нет данных для отображения');
+                    return;
+                }
+                
+                let html = '<table class="circuit-truth-table">';
+                
+                // Заголовок таблицы
+                html += '<thead><tr>';
+                
+                // Столбцы входов
+                this.circuitInputs.forEach((input, index) => {
+                    html += `<th class="input-header">Вход ${index + 1}</th>`;
+                });
+                
+                // Столбцы выходов вентилей (если включено)
+                if (this.showGatesInTable && this.circuitLogicGates.length > 0) {
+                    const sortedGates = [...this.circuitLogicGates].sort((a, b) => a.id - b.id);
+                    sortedGates.forEach((gate, index) => {
+                        const name = gate.name || `${gate.type}_${gate.id}`;
+                        html += `<th class="gate-header" title="${gate.type} вентиль">${name}</th>`;
+                    });
+                }
+                
+                // Столбцы выходов схемы
+                this.circuitOutputs.forEach((output, index) => {
+                    const name = output.name || `Выход ${index + 1}`;
+                    html += `<th class="output-header">${name}</th>`;
+                });
+                
+                html += '</tr></thead>';
+                
+                // Тело таблицы
+                html += '<tbody>';
+                this.circuitTruthTable.forEach((row, rowIndex) => {
+                    const rowClass = rowIndex % 2 === 0 ? 'even-row' : 'odd-row';
+                    html += `<tr class="${rowClass}">`;
+                    
+                    // Значения входов
+                    row.inputs.forEach(value => {
+                        html += `<td class="input-cell ${value === 1 ? 'true' : 'false'}">${value}</td>`;
+                    });
+                    
+                    // Значения на выходах вентилей
+                    if (this.showGatesInTable && this.circuitLogicGates.length > 0) {
+                        row.gateOutputs.forEach(value => {
+                            html += `<td class="gate-cell ${value === 1 ? 'true' : 'false'}">${value}</td>`;
+                        });
+                    }
+                    
+                    // Значения на выходах схемы
+                    row.outputs.forEach(value => {
+                        html += `<td class="output-cell ${value === 1 ? 'true' : 'false'}">${value}</td>`;
+                    });
+                    
+                    html += '</tr>';
+                });
+                html += '</tbody>';
+                html += '</table>';
+                
+                tableContainer.innerHTML = html;
+            }
+
+            updateModalTableSummary() {
+                if (!this.circuitTruthTable) return;
+                
+                document.getElementById('modalInputCount').textContent = this.circuitInputs.length;
+                document.getElementById('modalOutputCount').textContent = this.circuitOutputs.length;
+                document.getElementById('modalGateCount').textContent = this.circuitLogicGates.length;
+                document.getElementById('modalRowCount').textContent = this.circuitTruthTable.length;
+            }
+
+            openTruthTableModal() {
+                this.generateCircuitTruthTable();
+                document.getElementById('truthTableModal').style.display = 'flex';
+            }
+
+            toggleCompactView() {
+                this.compactView = !this.compactView;
+                const btn = document.getElementById('toggleColumnsBtn');
+                if (this.compactView) {
+                    btn.innerHTML = '<i class="fas fa-expand"></i> Полный вид';
+                    btn.classList.add('active');
+                } else {
+                    btn.innerHTML = '<i class="fas fa-columns"></i> Компактный вид';
+                    btn.classList.remove('active');
+                }
+                this.displayCircuitTruthTable();
+            }
+
+            exportTruthTable() {
+                if (!this.circuitTruthTable || this.circuitTruthTable.length === 0) {
+                    alert('Нет данных для экспорта');
+                    return;
+                }
+                
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // Заголовки
+                const headers = [];
+                this.circuitInputs.forEach((input, index) => {
+                    headers.push(`Input_${index + 1}`);
+                });
+                
+                if (this.showGatesInTable) {
+                    const sortedGates = [...this.circuitLogicGates].sort((a, b) => a.id - b.id);
+                    sortedGates.forEach((gate, index) => {
+                        headers.push(`${gate.type}_${index + 1}`);
+                    });
+                }
+                
+                this.circuitOutputs.forEach((output, index) => {
+                    headers.push(`Output_${index + 1}`);
+                });
+                
+                csvContent += headers.join(",") + "\n";
+                
+                // Данные
+                this.circuitTruthTable.forEach(row => {
+                    const rowData = [
+                        ...row.inputs,
+                        ...(this.showGatesInTable ? row.gateOutputs : []),
+                        ...row.outputs
+                    ];
+                    csvContent += rowData.join(",") + "\n";
+                });
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `circuit_truth_table_${new Date().getTime()}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            printTruthTable() {
+                const tableContainer = document.getElementById('circuitTruthTableContainer');
+                if (!tableContainer || !this.circuitTruthTable) {
+                    alert('Нет таблицы для печати');
+                    return;
+                }
+                
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>Таблица истинности схемы</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; padding: 20px; }
+                                h1 { color: #333; }
+                                table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                                th { background: #4CAF50; color: white; padding: 10px; text-align: center; }
+                                td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                                .true { background: #2ecc71; color: white; font-weight: bold; }
+                                .false { background: #e74c3c; color: white; font-weight: bold; }
+                                .summary { margin-top: 30px; padding: 15px; background: #f5f5f5; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>Таблица истинности логической схемы</h1>
+                            <p>Сгенерировано: ${new Date().toLocaleString('ru-RU')}</p>
+                            <p>Студент: Фаухетдинова Амалия Руслановна | Группа: 09-441</p>
+                            ${tableContainer.innerHTML}
+                            <div class="summary">
+                                <p>Входов: ${this.circuitInputs.length} | 
+                                   Выходов: ${this.circuitOutputs.length} | 
+                                   Вентилей: ${this.circuitLogicGates.length} | 
+                                   Строк: ${this.circuitTruthTable.length}</p>
+                            </div>
+                        </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.print();
+            }
+        }
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            window.simulator = new LogicGateSimulator();
+            console.log('Logic Gate Simulator загружен и готов к работе!');
+        });
+
+
+
+    </script>
 </body>
 </html>
